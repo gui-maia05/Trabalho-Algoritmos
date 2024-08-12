@@ -47,7 +47,7 @@ void BuscaRanking_Time(TimeFutebol dados[], int NumRegistros){
 		cin >> Ranking;
 		for (int i = 0; i < NumRegistros; i++){
 			if (dados[i].identificador == Ranking){
-				cout << "Posicao no Ranking de clubes: "<< dados[i].identificador << endl
+				cout << "Posicao no Ranking: "<< dados[i].identificador << endl
 				<< "Time: " << dados[i].nome << endl
 				<< "Cidade (Pais): " << dados[i].local << endl
 				<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
@@ -61,7 +61,7 @@ void BuscaRanking_Time(TimeFutebol dados[], int NumRegistros){
 		getline(cin, NomeTime);
 		for (int i = 0; i < NumRegistros; i++){
 			if (dados[i].nome == NomeTime){
-				cout << "Posicao no Ranking de clubes: "<< dados[i].identificador << endl
+				cout << "Posicao no Ranking: "<< dados[i].identificador << endl
 				<< "Time: " << dados[i].nome << endl
 				<< "Cidade (Pais): " << dados[i].local << endl
 				<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
@@ -74,8 +74,61 @@ void BuscaRanking_Time(TimeFutebol dados[], int NumRegistros){
 		cout << "Opcao Invalida!" << endl;
 	}
 }
+int ParticionamentoTitulos_Crescente(TimeFutebol dados[], int c, int f) { 
+   int pivo = dados[c].titulos;
+   TimeFutebol PivoPrincipal = dados[c];
+   int i = c+1, j = f;
+   while (i <= j) {
+       if (dados[i].titulos <= pivo) i++;
+       else if (pivo <= dados[j].titulos) j--; 
+       else { 
+           swap (dados[i],dados[j]);
+           i++;
+           j--;
+       }
+   }                  
+   dados[c] = dados[j];
+   dados[j] = PivoPrincipal;
+   return j; 
+}
 
-void LimparTela() {
+void QuickSortTitulosCrescente(TimeFutebol dados[], int PosPivo, int fim) {
+   int PosNovoPivo;         
+   if (PosPivo < fim) {  
+      PosNovoPivo = ParticionamentoTitulos_Crescente(dados, PosPivo, fim);
+      QuickSortTitulosCrescente(dados, PosPivo, PosNovoPivo - 1); 
+      QuickSortTitulosCrescente(dados, PosNovoPivo + 1, fim); 
+   }
+}
+
+int ParticionamentoTitulos_Decrescente(TimeFutebol dados[], int c, int f) { 
+   int pivo = dados[c].titulos;
+   TimeFutebol PivoPrincipal = dados[c];
+   int i = c+1, j = f;
+   while (i <= j) {
+       if (dados[i].titulos >= pivo) i++;
+       else if (pivo >= dados[j].titulos) j--; 
+       else { 
+           swap (dados[i],dados[j]);
+           i++;
+           j--;
+       }
+   }                  
+   dados[c] = dados[j];
+   dados[j] = PivoPrincipal;
+   return j; 
+}
+
+void QuickSortTitulosDecrescente(TimeFutebol dados[], int PosPivo, int fim) {
+   int PosNovoPivo;         
+   if (PosPivo < fim) {  
+      PosNovoPivo = ParticionamentoTitulos_Decrescente(dados, PosPivo, fim);
+      QuickSortTitulosDecrescente(dados, PosPivo, PosNovoPivo - 1); 
+      QuickSortTitulosDecrescente(dados, PosNovoPivo + 1, fim); 
+   }
+}
+
+void LimparTela(){
     #if defined(_WIN32) or defined(_WIN64)
         system("cls");   // Comando para Windows
     #else
@@ -86,7 +139,6 @@ void LimparTela() {
 int main(){
 	string linha;
 	int NumRegistros;
-	TimeFutebol* dados;
 	
 	ifstream entrada("TimesFutebol.csv");
 	if (not(entrada)){
@@ -98,15 +150,17 @@ int main(){
 		entrada.ignore();//pula o fim de linha
 	}
 	
+	TimeFutebol* dados;
 	dados = leituraArquivo(entrada, NumRegistros);
 
-	int entrada1;
+	int entrada1, entrada2;
+	
 	bool Repetir = true;
-
 	while(Repetir){
 		cout << "Escolha uma das Opcoes Disponiveis:" << endl
 		<< "[1] Realizar uma busca" << endl
-		<< "[2]" << endl << "[3]" << endl
+		<< "[2] Ordenar o vetor" << endl
+		<< "[3] Ver Banco de dados" << endl
 		<< "[-1] Sair do programa" << endl;
 		cout << "Digite um valor: ";
 		cin >> entrada1;
@@ -115,19 +169,54 @@ int main(){
 			case 1:
 			LimparTela();
 			BuscaRanking_Time(dados, NumRegistros);
-			Repetir = true;
 			break;
-
+			
+			case 2:
+			cout << "Voce deseja ordenar em qual ordem?" << endl
+			<< "[1] Crescente" << endl << "[2] Decrescente" << endl
+			<< "Digite um valor: ";
+			cin >> entrada2;
+			switch (entrada2){
+				case 1:
+				LimparTela();
+				ParticionamentoTitulos_Crescente(dados, 0, NumRegistros-1);
+				QuickSortTitulosCrescente(dados, 0, NumRegistros - 1);
+				for (int i = 0; i < NumRegistros; i++){
+					cout << "Posicao no Ranking: "<< dados[i].identificador << endl
+					<< "Time: " << dados[i].nome << endl
+					<< "Cidade (Pais): " << dados[i].local << endl
+					<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
+					<< "Quantidade Total de Titulos: " << dados[i].titulos << endl << endl;
+				}
+				break;
+				
+				case 2:
+				LimparTela();
+				ParticionamentoTitulos_Decrescente(dados, 0, NumRegistros-1);
+				QuickSortTitulosDecrescente(dados, 0, NumRegistros - 1);
+				for (int i = 0; i < NumRegistros; i++){
+					cout << "Posicao no Ranking: "<< dados[i].identificador << endl
+					<< "Time: " << dados[i].nome << endl
+					<< "Cidade (Pais): " << dados[i].local << endl
+					<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
+					<< "Quantidade Total de Titulos: " << dados[i].titulos << endl << endl;
+				}
+				break;
+				
+				default:
+				cout << "Opcao Invalida!" << endl;
+				}
+			break;
+			
+			case 3:
+			LimparTela();
+			leituraArquivo(entrada, NumRegistros);
+			break;
+			
 			case -1:
 			LimparTela();
 			cout << "Obrigado por testar!" << endl;
 			Repetir = false;
-			break;
-
-			default:
-			LimparTela();
-			cout << "Opcao Invalida!" << endl;
-			Repetir = true;
 			break;
 		}
 	}
