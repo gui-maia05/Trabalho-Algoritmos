@@ -12,37 +12,32 @@ struct TimeFutebol{
 	int titulos;
 };
 
-TimeFutebol* leituraArquivo (ifstream &arquivo_csv, int NumRegistros){
-	char lixo;
-	TimeFutebol* dados = new TimeFutebol[NumRegistros];
-	
-	for (int i = 0; i < NumRegistros; i++){
-		//le uma linha do arquivo();
+TimeFutebol* leituraArquivo(ifstream &arquivo_csv, int &NumRegistros) {
+    char lixo;
+    TimeFutebol* dados = new TimeFutebol[NumRegistros];
+    
+    for(int i = 0; i <  NumRegistros; i++){
 		arquivo_csv >> dados[i].identificador;
-		arquivo_csv >> lixo;
-		getline(arquivo_csv, dados[i].nome, ',');
-		getline(arquivo_csv, dados[i].local, ',');
-		arquivo_csv >> dados[i].anoFundacao;
-		arquivo_csv >> lixo;
-		arquivo_csv >> dados[i].titulos;
-		arquivo_csv.ignore(); //pula o fim de linha
-	}
-	return dados;
+        arquivo_csv >> lixo;
+        getline(arquivo_csv, dados[i].nome, ',');
+        getline(arquivo_csv, dados[i].local, ',');
+        arquivo_csv >> dados[i].anoFundacao;
+        arquivo_csv >> lixo;
+        arquivo_csv >> dados[i].titulos;
+        arquivo_csv.ignore(); // Pula o fim de linha
+    }
+    return dados;
 }
 
-void CriarNovoArquivo(string nomearquivo, TimeFutebol *dados, int NumRegistros){
-	ofstream Arquivo_saida(nomearquivo);
-	Arquivo_saida << "#Ranking Mundial de Clubes,Nome do Time,Cidade (País),Ano de Fundação, Numero de Títulos" << endl;
-	Arquivo_saida << NumRegistros << endl;
+void MostrarArquivo(TimeFutebol *dados, int NumRegistros){
 	for (int i = 0; i < NumRegistros; i++){
-		Arquivo_saida << dados[i].identificador << ","
-		<< dados[i].nome << "," 
-		<< dados[i].local << ","
-		<< dados[i].anoFundacao << ","
-		<< dados[i].titulos << endl;
+		cout << "Posicao no Ranking: "<< dados[i].identificador << endl
+		<< "Nome do Clube: " << dados[i].nome << endl
+		<< "Cidade (Pais): " << dados[i].local << endl
+		<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
+		<< "Quantidade Total de Titulos: " << dados[i].titulos << endl << endl;
 	}
 }
-
 
 void BuscaRanking(TimeFutebol *dados, int PosInicial, int PosFinal){
 	int meio;
@@ -99,8 +94,6 @@ void BuscaNomeClube(TimeFutebol *dados, int PosInicial, int PosFinal){
 	if(!encontrado)
 	cout << "O clube " << NomeClube << " nao esta no banco de dados!";
 }
-
-
 
 int ParticionamentoTitulos_Crescente(TimeFutebol *dados, int c, int f) { 
    int pivo = dados[c].titulos;
@@ -264,6 +257,33 @@ void QuickSortAnoDecrescente(TimeFutebol *dados, int PosPivo, int fim){
     }
 }
 
+int ParticionamentoPosicao_Crescente(TimeFutebol *dados, int c, int f){
+	int pivo = dados[c].identificador;
+	TimeFutebol PivoPrincipal = dados[c];
+	int i = c+1, j = f;
+	while (i <= j){
+		if (dados[i].identificador <= pivo) i++;
+		else if(pivo <= dados[j].identificador) j--;
+		else{
+			swap(dados[i], dados[j]);
+			i++;
+			j--;
+		}
+	}
+	dados[c] = dados[j];
+	dados[j] = PivoPrincipal;
+	return j;
+}
+
+void QuickSortPosicaoCrescente(TimeFutebol *dados, int PosPivo, int fim){
+	int PosNovoPivo;
+	if (PosPivo < fim){
+		PosNovoPivo = ParticionamentoPosicao_Crescente(dados, PosPivo, fim);
+		QuickSortPosicaoCrescente(dados, PosPivo, PosNovoPivo -1);
+		QuickSortPosicaoCrescente(dados, PosNovoPivo + 1, fim);
+	}
+}
+
 void PesquisarLinhas(TimeFutebol *dados, int NumRegistros, int LinhaInicial, int LinhaFinal){
     if(LinhaInicial <= LinhaFinal){
         if (LinhaInicial < NumRegistros and LinhaFinal <= NumRegistros){
@@ -284,7 +304,39 @@ void PesquisarLinhas(TimeFutebol *dados, int NumRegistros, int LinhaInicial, int
     cout << "A linha inicial deve ser menor que a linha final!" << endl;
 }
 
-void MostrarArquivo(TimeFutebol *dados, int NumRegistros){
+void EscritaArquivo(TimeFutebol* dados, int NumRegistros){
+	ofstream arquivo("TimesFutebol.csv");
+	arquivo << "#Ranking Mundial de Clubes,Nome do Time,Cidade (País),Ano de Fundação, Numero de Títulos" << endl;
+	arquivo << NumRegistros;
+	cout << endl;
+	for (int i = 0; i < NumRegistros; i++){
+		arquivo << dados[i].identificador << ',' 
+		<< dados[i].nome << ','
+		<< dados[i].local << ','
+		<< dados[i].anoFundacao << ','
+		<< dados[i].titulos << endl;
+	}
+}
+
+void leituraArq(TimeFutebol* dados) {
+	char lixo;
+	string linha;
+	int NumRegistros;
+	ifstream arquivo_csv ("TimesFutebol.csv");
+	getline(arquivo_csv, linha);
+	arquivo_csv >> NumRegistros;
+	
+    for(int i = 0; i <  NumRegistros; i++){
+		arquivo_csv >> dados[i].identificador;
+        arquivo_csv >> lixo;
+        getline(arquivo_csv, dados[i].nome, ',');
+        getline(arquivo_csv, dados[i].local, ',');
+        arquivo_csv >> dados[i].anoFundacao;
+        arquivo_csv >> lixo;
+        arquivo_csv >> dados[i].titulos;
+        arquivo_csv.ignore(); // Pula o fim de linha
+    }
+	
 	for (int i = 0; i < NumRegistros; i++){
 		cout << "Posicao no Ranking: "<< dados[i].identificador << endl
 		<< "Nome do Clube: " << dados[i].nome << endl
@@ -292,6 +344,41 @@ void MostrarArquivo(TimeFutebol *dados, int NumRegistros){
 		<< "Ano de Fundacao: " << dados[i].anoFundacao << endl
 		<< "Quantidade Total de Titulos: " << dados[i].titulos << endl << endl;
 	}
+	
+}
+
+void NovoElemento(TimeFutebol* &dados, int &NumRegistros, ifstream& Arquivo){
+	TimeFutebol* aumentar = new TimeFutebol[NumRegistros + 1];
+
+	for (int i = 0; i < NumRegistros; i++){
+		aumentar[i] = dados[i];
+	}
+
+	cout << "Insira as informacoes do novo clube!" << endl;
+	cout << "Posicao no Ranking: ";
+	cin >> aumentar[NumRegistros].identificador;
+	cout << "Nome do Clube: ";
+	cin.ignore();
+	getline(cin, aumentar[NumRegistros].nome);
+	cout << "Cidade (Pais): ";
+	getline(cin, aumentar[NumRegistros].local);
+	cout << "Ano de Fundacao: ";
+	cin >> aumentar[NumRegistros].anoFundacao;
+	cout << "Quantidade Total de Titulos: ";
+	cin >> aumentar[NumRegistros].titulos;
+
+	int posicao = NumRegistros;
+
+	while (posicao > 0 and aumentar[posicao].identificador > aumentar[posicao - 1].identificador){
+		swap(aumentar[posicao], aumentar[posicao -1]);
+		posicao--;
+	}
+
+	delete[] dados;
+	dados = aumentar;
+	NumRegistros++;
+	EscritaArquivo(dados, NumRegistros);
+
 }
 
 
@@ -319,7 +406,8 @@ int main(){
 		cout << endl << "Escolha uma das Opcoes Disponiveis:" << endl
 		<< "[1] Realizar uma busca" << endl
 		<< "[2] Ordenar o vetor" << endl
-        << "[3] Pesquisar a partir de uma linha inicial ate uma linha final" << endl
+        << "[3] Ver o Arquivo" << endl
+		<< "[4] Adicionar um novo elemento" << endl
 		<< "[-1] Sair do programa" << endl;
 		cout << "Digite um valor: ";
 		cin >> escolha1;
@@ -332,6 +420,7 @@ int main(){
 			cin >> escolha2;
 			switch (escolha2){
 				case 1:
+				QuickSortPosicaoCrescente(dados, 0, NumRegistros-1);
 				BuscaRanking(dados, 0, NumRegistros -1);
 				break;
 
@@ -413,13 +502,34 @@ int main(){
             break;
 
             case 3:
-            cout << "Digite a linha Inicial: ";
-            cin >> LinhaInicial;
-            cout << "Digite a linha Final: ";
-            cin >> LinhaFinal;
-            cout << endl;
-            PesquisarLinhas(dados, NumRegistros, LinhaInicial, LinhaFinal);
-            break;
+			cout << "[1] Ver arquivo completo" << endl
+			<< "[2] Pesquisar a partir de uma linha inicial ate uma linha final" << endl;
+			cout << "Digite um valor: ";
+			cin >> escolha2;
+			switch (escolha2){
+				case 1:
+				QuickSortPosicaoCrescente(dados, 0, NumRegistros -1);
+				MostrarArquivo(dados, NumRegistros);
+				break;
+			
+				case 2:
+				cout << "Digite a linha Inicial: ";
+            	cin >> LinhaInicial;
+            	cout << "Digite a linha Final: ";
+            	cin >> LinhaFinal;
+            	cout << endl;
+				QuickSortPosicaoCrescente(dados, 0, NumRegistros-1);
+            	PesquisarLinhas(dados, NumRegistros, LinhaInicial, LinhaFinal);
+            	break;
+			}
+			break;
+
+			case 4:
+				NovoElemento(dados, NumRegistros, Arquivo);
+				EscritaArquivo(dados, NumRegistros);
+				leituraArq(dados);
+			break;
+
 
 			case -1:
 			cout << "Obrigado por testar!" << endl;
