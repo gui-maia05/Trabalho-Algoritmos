@@ -12,20 +12,34 @@ struct TimeFutebol{
 	int titulos;
 };
 
-TimeFutebol* leituraArquivo(ifstream &arquivo_csv, int &NumRegistros){
+TimeFutebol* leituraArquivo(ifstream &arquivo_csv, int &NumRegistros, int &Capacidade){
     char lixo;
     TimeFutebol* dados = new TimeFutebol[NumRegistros];
-    
-    for(int i = 0; i <  NumRegistros; i++){
+	int i = 0;
+
+	while(i < NumRegistros){
+		if (Capacidade == i){
+			Capacidade += 5;
+
+			TimeFutebol* novos_dados = new TimeFutebol[Capacidade];
+
+			for (int j = 0; j < i; j++){
+				novos_dados[j] = dados[j];
+			}
+			delete [] dados;
+			dados = novos_dados;
+		}	
 		arquivo_csv >> dados[i].identificador;
-        arquivo_csv >> lixo;
-        getline(arquivo_csv, dados[i].nome, ',');
-        getline(arquivo_csv, dados[i].local, ',');
-        arquivo_csv >> dados[i].anoFundacao;
-        arquivo_csv >> lixo;
-        arquivo_csv >> dados[i].titulos;
-        arquivo_csv.ignore(); // Pula o fim de linha
-    }
+    	arquivo_csv >> lixo;
+    	getline(arquivo_csv, dados[i].nome, ',');
+    	getline(arquivo_csv, dados[i].local, ',');
+    	arquivo_csv >> dados[i].anoFundacao;
+    	arquivo_csv >> lixo;
+    	arquivo_csv >> dados[i].titulos;
+    	arquivo_csv.ignore(); // Pula o fim de linha
+
+		i++;
+	}
     return dados;
 }
 
@@ -420,7 +434,7 @@ void ExcluirElemento(TimeFutebol* &dados, int &NumRegistros, int RankingProcurad
 
 int main(){
 	string linha;
-	int NumRegistros;
+	int NumRegistros, Capacidade = 40;
 	
 	ifstream Arquivo("TimesFutebol.csv");
 	if (not(Arquivo)){
@@ -432,7 +446,7 @@ int main(){
 		Arquivo.ignore();//pula o fim de linha
 	}
 	TimeFutebol* dados;
-	dados = leituraArquivo(Arquivo, NumRegistros);
+	dados = leituraArquivo(Arquivo, NumRegistros, Capacidade);
 
 	int escolha1, escolha2, escolha3;
     int LinhaInicial, LinhaFinal;
@@ -544,6 +558,7 @@ int main(){
 				<< "[2] Pesquisar a partir de uma linha inicial ate uma linha final" << endl;
 				cout << "Digite um valor: ";
 				cin >> escolha2;
+				cout << endl;
 				switch (escolha2){
 					case 1:
 					QuickSortPosicaoCrescente(dados, 0, NumRegistros -1);
@@ -572,8 +587,10 @@ int main(){
 				int RankingProcurado;
 				cout << "Digite a posicao que deseja excluir: ";
 				cin >> RankingProcurado;
+                cout << endl;
 				QuickSortPosicaoCrescente(dados, 0, NumRegistros -1);
 				ExcluirElemento(dados, NumRegistros, RankingProcurado);
+                Repetir = false;
 				break;
 
 
