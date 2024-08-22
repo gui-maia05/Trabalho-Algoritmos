@@ -53,11 +53,11 @@ void MostrarArquivo(TimeFutebol *dados, int NumRegistros){ //Ver o arquivo
 	}
 }
 
-void BuscaRanking(TimeFutebol *dados, int PosInicial, int PosFinal){ //Busca Binaria pelo Ranking de Clubes
+void BuscaRanking(TimeFutebol *dados, int PosInicial, int PosFinal, int NumRegistros){ //Busca Binaria pelo Ranking de Clubes
 	int meio;
 	int Ranking;
 	bool encontrado = false;
-	cout << "Digite a posicao no Ranking(1-100): ";
+	cout << "Digite a posicao no Ranking(1-" << NumRegistros << "): ";
     cin >> Ranking;
     cout << endl;
 
@@ -356,16 +356,13 @@ void NovoElemento(TimeFutebol* &dados, int &NumRegistros){
 	int opcao;
 	string nome_arquivo;
 
-	cout << "Gostaria de gravar a alteracao em um arquivo?" << endl
+	cout << "Gostaria de gravar os dados no arquivo?" << endl
 	<< "[1] Sim" << endl << "[2] Nao" << endl;
 	cout << "Digite um valor: ";
 
 	cin >> opcao;
-
 	if (opcao == 1){
-		cout << "Qual o nome do arquivo que deseja gravar?" << endl;
-		cin >> nome_arquivo;
-		ofstream arquivo(nome_arquivo);
+		ofstream arquivo("TimesFutebol.csv");
 		arquivo << "#Ranking Mundial de Clubes,Nome do Time,Cidade (País),Ano de Fundação,Numero de Títulos" << endl;
 		arquivo << NumRegistros;
 		arquivo << endl;
@@ -473,7 +470,7 @@ int main(){
 				switch (escolha2){
 					case 1:
 					QuickSortPosicaoCrescente(dados, 0, NumRegistros-1);
-					BuscaRanking(dados, 0, NumRegistros -1);
+					BuscaRanking(dados, 0, NumRegistros -1, NumRegistros);
 					break;
 
 					case 2:
@@ -583,7 +580,7 @@ int main(){
 				Repetir = false;
 				break;
 			
-			case 5:
+			case 5://Chama a função de Excluir um elemento
 				int RankingProcurado;
 				cout << "Digite a posicao que deseja excluir: ";
 				cin >> RankingProcurado;
@@ -604,7 +601,6 @@ int main(){
 			break;
 		}
 	}
-
 	delete [] dados;
 	Arquivo.close();
     return 0;
